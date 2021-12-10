@@ -1,4 +1,5 @@
 use core::num;
+use std::io::{self, BufRead, Cursor, Lines};
 use std::str::SplitWhitespace;
 
 use anyhow::Result;
@@ -19,14 +20,64 @@ pub enum ParseError {
         #[from]
         num::ParseFloatError,
     ),
+    #[error("i/o error")]
+    Io(
+        #[source]
+        #[from]
+        io::Error,
+    ),
     #[error("missing item in line")]
     MissingItem,
+    #[error("missing line")]
+    MissingLine,
     #[error("failed to parse")]
     Custom(
         #[source]
         #[from]
         anyhow::Error,
     ),
+}
+
+pub struct LineParser {
+    lines: Lines<Cursor<Vec<u8>>>,
+}
+
+impl LineParser {
+    /// Parse lines.
+    pub fn new(input: Cursor<Vec<u8>>) -> Self {
+        Self {
+            lines: input.lines(),
+        }
+    }
+
+    /// Parse the next line as input.
+    pub fn parse<T>(&mut self) -> Result<T, ParseError>
+    where
+        T: Parseable,
+    {
+        let line = self.line()?;
+
+        let mut p = Parser {
+            it: line.split_whitespace(),
+        };
+
+        T::parse(&mut p)
+    }
+
+    /// Get the next line.
+    pub fn line(&mut self) -> Result<String, ParseError> {
+        self.try_line()?.ok_or_else(|| ParseError::MissingLine)
+    }
+
+    /// Get the next line.
+    pub fn try_line(&mut self) -> Result<Option<String>, ParseError> {
+        let line = match self.lines.next() {
+            Some(line) => line,
+            None => return Ok(None),
+        };
+
+        Ok(Some(line.map_err(ParseError::Io)?))
+    }
 }
 
 /// Parser helper.
@@ -70,6 +121,9 @@ macro_rules! parse_int {
     };
 }
 
+parse_int!(isize);
+parse_int!(usize);
+
 parse_int!(u8);
 parse_int!(u16);
 parse_int!(u32);
@@ -102,3 +156,18 @@ macro_rules! parse_tuple {
 }
 
 parse_tuple!(A a, B b, C c, D d, E e);
+
+impl<T, const N: usize> Parseable for [T; N]
+where
+    T: Copy + Default + Parseable,
+{
+    fn parse(p: &mut Parser<'_>) -> Result<Self, ParseError> {
+        let mut init = [T::default(); N];
+
+        for out in init.iter_mut() {
+            *out = T::parse(p)?;
+        }
+
+        Ok(init)
+    }
+}

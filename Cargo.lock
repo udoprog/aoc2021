@@ -13,8 +13,15 @@ name = "aoc"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "bittle",
  "thiserror",
 ]
+
+[[package]]
+name = "bittle"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26b35e4807c2dd21c4a769b3c239810ac2aba8dccf3558dbdf7949857997a4b0"
 
 [[package]]
 name = "proc-macro2"
