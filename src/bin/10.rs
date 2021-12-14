@@ -11,12 +11,12 @@ enum Chunk {
 
 fn main() -> Result<()> {
     let input = aoc::load("10.txt")?;
-    let mut p = LineParser::new(input);
+    let mut p = LineParser::new(&input);
 
     let mut part1 = 0;
     let mut part2 = Vec::new();
 
-    'outer: while let Some(line) = p.try_line()? {
+    'outer: while let Some(line) = p.next() {
         let mut stack = Vec::new();
 
         for c in line.chars() {

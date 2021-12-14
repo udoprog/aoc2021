@@ -3,7 +3,7 @@ use aoc::LineParser;
 
 fn main() -> Result<()> {
     let input = aoc::load("06.txt")?;
-    let line = LineParser::new(input).line()?;
+    let line = LineParser::new(&input).line()?;
 
     let mut ages = [0u64; 9];
 

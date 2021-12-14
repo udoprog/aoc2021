@@ -5,12 +5,12 @@ use aoc::LineParser;
 
 fn main() -> Result<()> {
     let input = aoc::load("09.txt")?;
-    let mut p = LineParser::new(input);
+    let mut p = LineParser::new(&input);
 
     let mut y = 0isize;
     let mut map = HashMap::new();
 
-    while let Some(line) = p.try_line()? {
+    while let Some(line) = p.next() {
         for (x, c) in line.char_indices() {
             let mut buf = [0, 0, 0, 0];
             let s = c.encode_utf8(&mut buf);

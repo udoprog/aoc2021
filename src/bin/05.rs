@@ -11,11 +11,11 @@ struct Line {
 
 fn main() -> Result<()> {
     let input = aoc::load("05.txt")?;
-    let mut p = LineParser::new(input);
+    let mut p = LineParser::new(&input);
 
     let mut lines = Vec::new();
 
-    while let Some(line) = p.try_line()?.and_then(|s| parse(&s)) {
+    while let Some(line) = p.next().and_then(parse) {
         lines.push(line);
     }
 

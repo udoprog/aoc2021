@@ -5,11 +5,11 @@ use aoc::LineParser;
 
 fn main() -> Result<()> {
     let input = aoc::load("11.txt")?;
-    let mut p = LineParser::new(input);
+    let mut p = LineParser::new(&input);
 
     let mut grid: Vec<u8> = Vec::new();
 
-    while let Some(line) = p.try_line()? {
+    while let Some(line) = p.next() {
         for c in line.chars() {
             grid.push(match c {
                 '1' => 1,

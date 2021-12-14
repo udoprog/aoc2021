@@ -1,6 +1,6 @@
 use core::num;
-use std::io::{self, BufRead, Cursor, Lines};
-use std::str::SplitWhitespace;
+use std::io;
+use std::str::{Lines, SplitWhitespace};
 
 use anyhow::Result;
 use thiserror::Error;
@@ -38,13 +38,13 @@ pub enum ParseError {
     ),
 }
 
-pub struct LineParser {
-    lines: Lines<Cursor<Vec<u8>>>,
+pub struct LineParser<'a> {
+    lines: Lines<'a>,
 }
 
-impl LineParser {
+impl<'a> LineParser<'a> {
     /// Parse lines.
-    pub fn new(input: Cursor<Vec<u8>>) -> Self {
+    pub fn new(input: &'a str) -> Self {
         Self {
             lines: input.lines(),
         }
@@ -65,18 +65,13 @@ impl LineParser {
     }
 
     /// Get the next line.
-    pub fn line(&mut self) -> Result<String, ParseError> {
-        self.try_line()?.ok_or_else(|| ParseError::MissingLine)
+    pub fn line(&mut self) -> Result<&'a str, ParseError> {
+        self.next().ok_or_else(|| ParseError::MissingLine)
     }
 
     /// Get the next line.
-    pub fn try_line(&mut self) -> Result<Option<String>, ParseError> {
-        let line = match self.lines.next() {
-            Some(line) => line,
-            None => return Ok(None),
-        };
-
-        Ok(Some(line.map_err(ParseError::Io)?))
+    pub fn next(&mut self) -> Option<&'a str> {
+        self.lines.next()
     }
 }
 

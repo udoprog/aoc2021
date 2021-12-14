@@ -37,7 +37,7 @@ impl Board {
 
 fn main() -> Result<()> {
     let input = aoc::load("04.txt")?;
-    let mut p = aoc::LineParser::new(input);
+    let mut p = aoc::LineParser::new(&input);
 
     let line = p.line()?;
 
@@ -49,7 +49,7 @@ fn main() -> Result<()> {
 
     let mut boards = Vec::new();
 
-    while p.try_line()?.is_some() {
+    while p.next().is_some() {
         let mut rows = [BitSet::empty(); 5];
         let mut cols = [BitSet::empty(); 5];
 
