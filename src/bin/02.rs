@@ -11,7 +11,7 @@ enum Command {
 
 impl Parseable for Command {
     fn parse(p: &mut aoc::Parser<'_>) -> Result<Self, ParseError> {
-        let line = p.next()?;
+        let line = p.item()?;
 
         Ok(match line {
             "forward" => Self::Forward,

@@ -1,6 +1,5 @@
 use core::num;
 use std::io;
-use std::str::{Lines, SplitWhitespace};
 
 use anyhow::Result;
 use thiserror::Error;
@@ -38,16 +37,15 @@ pub enum ParseError {
     ),
 }
 
-pub struct LineParser<'a> {
-    lines: Lines<'a>,
+/// Parser helper.
+pub struct Parser<'a> {
+    input: &'a str,
 }
 
-impl<'a> LineParser<'a> {
+impl<'a> Parser<'a> {
     /// Parse lines.
     pub fn new(input: &'a str) -> Self {
-        Self {
-            lines: input.lines(),
-        }
+        Self { input }
     }
 
     /// Parse the next line as input.
@@ -55,35 +53,53 @@ impl<'a> LineParser<'a> {
     where
         T: Parseable,
     {
-        let line = self.line()?;
+        T::parse(self)
+    }
 
-        let mut p = Parser {
-            it: line.split_whitespace(),
-        };
-
-        T::parse(&mut p)
+    /// Get the next item as split by whitespace.
+    pub fn item(&mut self) -> Result<&'a str, ParseError> {
+        self.next_item().ok_or_else(|| ParseError::MissingItem)
     }
 
     /// Get the next line.
     pub fn line(&mut self) -> Result<&'a str, ParseError> {
-        self.next().ok_or_else(|| ParseError::MissingLine)
+        self.next_line().ok_or_else(|| ParseError::MissingLine)
     }
 
     /// Get the next line.
-    pub fn next(&mut self) -> Option<&'a str> {
-        self.lines.next()
+    pub fn next_line(&mut self) -> Option<&'a str> {
+        if let Some((part, rest)) = self.input.split_once('\n') {
+            self.input = rest;
+            return Some(part.trim());
+        }
+
+        let s = std::mem::take(&mut self.input);
+
+        if !s.is_empty() {
+            return Some(s);
+        }
+
+        None
     }
-}
 
-/// Parser helper.
-pub struct Parser<'a> {
-    it: SplitWhitespace<'a>,
-}
-
-impl<'a> Parser<'a> {
     /// Parse the next item or raise an error.
-    pub fn next(&mut self) -> Result<&'a str, ParseError> {
-        self.it.next().ok_or_else(|| ParseError::MissingItem)
+    pub fn next_item(&mut self) -> Option<&'a str> {
+        if let Some((part, rest)) = self
+            .input
+            .trim_start_matches(char::is_whitespace)
+            .split_once(char::is_whitespace)
+        {
+            self.input = rest;
+            return Some(part);
+        }
+
+        let s = std::mem::take(&mut self.input);
+
+        if !s.is_empty() {
+            return Some(s);
+        }
+
+        None
     }
 }
 
@@ -94,9 +110,7 @@ where
 {
     let line = line.as_ref();
 
-    let mut p = Parser {
-        it: line.split_whitespace(),
-    };
+    let mut p = Parser { input: line };
 
     T::parse(&mut p)
 }
@@ -110,7 +124,8 @@ macro_rules! parse_int {
     ($ty:ty) => {
         impl Parseable for $ty {
             fn parse(p: &mut Parser<'_>) -> Result<Self, ParseError> {
-                Ok(p.next()?.parse()?)
+                let item = p.item()?;
+                Ok(item.parse()?)
             }
         }
     };

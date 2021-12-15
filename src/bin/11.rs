@@ -1,15 +1,15 @@
 use std::collections::VecDeque;
 
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 
 fn main() -> Result<()> {
     let input = aoc::load("11.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut grid: Vec<u8> = Vec::new();
 
-    while let Some(line) = p.next() {
+    while let Some(line) = p.next_line() {
         for c in line.chars() {
             grid.push(match c {
                 '1' => 1,

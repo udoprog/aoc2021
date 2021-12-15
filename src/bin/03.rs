@@ -66,7 +66,7 @@ impl Parseable for Bits {
     fn parse(p: &mut aoc::Parser<'_>) -> Result<Self, ParseError> {
         let mut init = [false; DIGITS];
 
-        let line = p.next()?;
+        let line = p.item()?;
 
         for (b, c) in init.iter_mut().zip(line.chars()) {
             *b = matches!(c, '1');

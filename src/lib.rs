@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Result};
 
 mod parse;
-pub use self::parse::{parse, LineParser, ParseError, Parseable, Parser};
+pub use self::parse::{parse, ParseError, Parseable, Parser};
 
 pub fn load(name: &str) -> Result<String> {
     let dir =

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 use bittle::BitSet;
 
 #[derive(Debug, Clone, Copy)]
@@ -16,13 +16,13 @@ struct Inst {
 
 fn main() -> Result<()> {
     let input = aoc::load("13.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut page = [BitSet::<[u128; 12]>::empty(); 1536];
     let mut w = 0;
     let mut h = 0;
 
-    while let Some((x, y)) = p.next().and_then(parse) {
+    while let Some((x, y)) = p.next_line().and_then(parse) {
         page[x].set(y);
         w = usize::max(w, x + 1);
         h = usize::max(h, y + 1);
@@ -31,7 +31,7 @@ fn main() -> Result<()> {
     let mut first = false;
     let mut part1 = 0;
 
-    while let Some(inst) = p.next().and_then(parse_inst) {
+    while let Some(inst) = p.next_line().and_then(parse_inst) {
         match inst.axis {
             Axis::X => {
                 for x in inst.d..inst.d * 2 + 1 {

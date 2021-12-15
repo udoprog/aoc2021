@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 
 #[derive(Debug, Clone, Copy)]
 struct Line {
@@ -11,11 +11,11 @@ struct Line {
 
 fn main() -> Result<()> {
     let input = aoc::load("05.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut lines = Vec::new();
 
-    while let Some(line) = p.next().and_then(parse) {
+    while let Some(line) = p.next_line().and_then(parse) {
         lines.push(line);
     }
 

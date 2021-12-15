@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, Result};
-use aoc::LineParser;
+use aoc::Parser;
 
 #[derive(Debug, Clone, Copy)]
 enum Chunk {
@@ -11,12 +11,12 @@ enum Chunk {
 
 fn main() -> Result<()> {
     let input = aoc::load("10.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut part1 = 0;
     let mut part2 = Vec::new();
 
-    'outer: while let Some(line) = p.next() {
+    'outer: while let Some(line) = p.next_line() {
         let mut stack = Vec::new();
 
         for c in line.chars() {

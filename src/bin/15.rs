@@ -4,11 +4,11 @@ use std::{
 };
 
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 
 fn main() -> Result<()> {
     let input = aoc::load("15.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut map = HashMap::new();
 
@@ -17,12 +17,10 @@ fn main() -> Result<()> {
 
     let mut y = 0isize;
 
-    while let Some(line) = p.next() {
-        for (x, c) in line.chars().enumerate() {
+    while let Some(line) = p.next_line() {
+        for (x, c) in line.chars().flat_map(|c| c.to_digit(10)).enumerate() {
             let x = x as isize;
-            let mut s = [0, 0, 0, 0];
-            let c = str::parse::<usize>(c.encode_utf8(&mut s))?;
-            map.insert((x, y), c);
+            map.insert((x, y), c as usize);
             w = isize::max(w, x + 1);
             h = isize::max(h, y + 1);
         }

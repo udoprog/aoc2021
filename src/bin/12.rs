@@ -1,7 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 
 #[derive(Default)]
 struct Alloc {
@@ -54,12 +54,12 @@ struct Step {
 
 fn main() -> Result<()> {
     let input = aoc::load("12.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut edges = HashMap::<_, Vec<Node>>::new();
     let mut alloc = Default::default();
 
-    while let Some(step) = p.next().and_then(|s| parse(s, &mut alloc)) {
+    while let Some(step) = p.next_line().and_then(|s| parse(s, &mut alloc)) {
         assert!(step.from != step.to);
 
         if step.to != Node::Start {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 
 const EIGHT: u32 = 7;
 const SEVEN: u32 = 3;
@@ -38,11 +38,11 @@ impl Test {
 
 fn main() -> Result<()> {
     let input = aoc::load("08.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut tests = Vec::new();
 
-    while let Some(input) = p.next().and_then(parse) {
+    while let Some(input) = p.next_line().and_then(parse) {
         tests.push(input);
     }
 

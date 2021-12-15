@@ -1,20 +1,21 @@
 use std::collections::{HashMap, VecDeque};
 
 use anyhow::Result;
-use aoc::LineParser;
+use aoc::Parser;
 
 fn main() -> Result<()> {
     let input = aoc::load("09.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let mut y = 0isize;
     let mut map = HashMap::new();
 
-    while let Some(line) = p.next() {
-        for (x, c) in line.char_indices() {
-            let mut buf = [0, 0, 0, 0];
-            let s = c.encode_utf8(&mut buf);
-            map.insert((x as isize, y), str::parse::<u32>(s)?);
+    while let Some(line) = p.next_line() {
+        for (x, c) in line
+            .char_indices()
+            .flat_map(|(x, c)| Some((x, c.to_digit(10)?)))
+        {
+            map.insert((x as isize, y), c);
         }
 
         y += 1;
@@ -22,8 +23,8 @@ fn main() -> Result<()> {
 
     let mut part1 = 0;
 
-    for (&(x, y), &current) in &map {
-        if neigh(x, y).all(|n| map.get(&n).map(|&at| at > current).unwrap_or(true)) {
+    for (&p, &current) in &map {
+        if neigh(p).all(|n| map.get(&n).map(|&at| at > current).unwrap_or(true)) {
             part1 += current + 1;
         }
     }
@@ -40,8 +41,8 @@ fn main() -> Result<()> {
         let mut queue = VecDeque::new();
         queue.push_back(n);
 
-        while let Some((x, y)) = queue.pop_front() {
-            for n in neigh(x, y) {
+        while let Some(p) = queue.pop_front() {
+            for n in neigh(p) {
                 if !matches!(map.remove(&n), Some(9) | None) {
                     size += 1;
                     queue.push_back(n);
@@ -65,6 +66,12 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn neigh(x: isize, y: isize) -> impl Iterator<Item = (isize, isize)> {
-    [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)].into_iter()
+fn neigh(p: (isize, isize)) -> impl Iterator<Item = (isize, isize)> {
+    [
+        (p.0 + 1, p.1),
+        (p.0 - 1, p.1),
+        (p.0, p.1 + 1),
+        (p.0, p.1 - 1),
+    ]
+    .into_iter()
 }

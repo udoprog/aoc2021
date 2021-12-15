@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
-use aoc::LineParser;
+use aoc::Parser;
 
 struct Sub {
     m: [char; 2],
@@ -10,14 +10,14 @@ struct Sub {
 
 fn main() -> Result<()> {
     let input = aoc::load("14.txt")?;
-    let mut p = LineParser::new(&input);
+    let mut p = Parser::new(&input);
 
     let template = p.line()?.chars().collect::<Vec<_>>();
     p.line()?;
 
     let mut rules = HashMap::new();
 
-    while let Some(sub) = p.next().and_then(parse) {
+    while let Some(sub) = p.next_line().and_then(parse) {
         rules.insert(sub.m, sub.to);
     }
 
