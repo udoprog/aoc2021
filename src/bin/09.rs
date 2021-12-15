@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     let mut y = 0isize;
     let mut map = HashMap::new();
 
-    while let Some(line) = p.next_line() {
+    while let Some(line) = p.next_line().map(Parser::into_str) {
         for (x, c) in line
             .char_indices()
             .flat_map(|(x, c)| Some((x, c.to_digit(10)?)))

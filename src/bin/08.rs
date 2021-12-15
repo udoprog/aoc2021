@@ -109,7 +109,9 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse(line: &str) -> Option<Test> {
+fn parse(line: Parser<'_>) -> Option<Test> {
+    let line = line.into_str();
+
     let (first, second) = line.split_once(" | ")?;
     let inputs = first.split(' ').map(to_bits).collect::<Vec<_>>();
     let outputs = second.split(' ').map(to_bits).collect::<Vec<_>>();

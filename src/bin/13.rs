@@ -22,7 +22,7 @@ fn main() -> Result<()> {
     let mut w = 0;
     let mut h = 0;
 
-    while let Some((x, y)) = p.next_line().and_then(parse) {
+    while let Some((x, y)) = p.next_line().map(Parser::into_str).and_then(parse) {
         page[x].set(y);
         w = usize::max(w, x + 1);
         h = usize::max(h, y + 1);
@@ -31,7 +31,7 @@ fn main() -> Result<()> {
     let mut first = false;
     let mut part1 = 0;
 
-    while let Some(inst) = p.next_line().and_then(parse_inst) {
+    while let Some(inst) = p.next_line().map(Parser::into_str).and_then(parse_inst) {
         match inst.axis {
             Axis::X => {
                 for x in inst.d..inst.d * 2 + 1 {

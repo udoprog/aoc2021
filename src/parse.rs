@@ -38,6 +38,7 @@ pub enum ParseError {
 }
 
 /// Parser helper.
+#[derive(Debug)]
 pub struct Parser<'a> {
     input: &'a str,
 }
@@ -48,10 +49,15 @@ impl<'a> Parser<'a> {
         Self { input }
     }
 
+    /// Coerce into underlying string.
+    pub fn into_str(self) -> &'a str {
+        self.input
+    }
+
     /// Parse the next line as input.
-    pub fn parse<T>(&mut self) -> Result<T, ParseError>
+    pub fn parse<T: 'a>(&mut self) -> Result<T, ParseError>
     where
-        T: Parseable,
+        T: Parseable<'a>,
     {
         T::parse(self)
     }
@@ -62,21 +68,23 @@ impl<'a> Parser<'a> {
     }
 
     /// Get the next line.
-    pub fn line(&mut self) -> Result<&'a str, ParseError> {
-        self.next_line().ok_or_else(|| ParseError::MissingLine)
+    pub fn line(&mut self) -> Result<Parser<'a>, ParseError> {
+        let p = self.next_line().ok_or_else(|| ParseError::MissingLine)?;
+
+        Ok(p)
     }
 
     /// Get the next line.
-    pub fn next_line(&mut self) -> Option<&'a str> {
+    pub fn next_line(&mut self) -> Option<Parser<'a>> {
         if let Some((part, rest)) = self.input.split_once('\n') {
             self.input = rest;
-            return Some(part.trim());
+            return Some(Parser { input: part.trim() });
         }
 
-        let s = std::mem::take(&mut self.input);
+        let input = std::mem::take(&mut self.input);
 
-        if !s.is_empty() {
-            return Some(s);
+        if !input.is_empty() {
+            return Some(Parser { input });
         }
 
         None
@@ -104,25 +112,39 @@ impl<'a> Parser<'a> {
 }
 
 /// Parse a single line of input into the given output.
-pub fn parse<T>(line: impl AsRef<str>) -> Result<T, ParseError>
+pub fn parse<'de, T: 'de>(line: &'de str) -> Result<T, ParseError>
 where
-    T: Parseable,
+    T: Parseable<'de>,
 {
-    let line = line.as_ref();
-
     let mut p = Parser { input: line };
-
     T::parse(&mut p)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
+pub struct Skip;
+
 /// A trait for things that can be parsed.
-pub trait Parseable: Sized {
-    fn parse(p: &mut Parser<'_>) -> Result<Self, ParseError>;
+pub trait Parseable<'de>: Sized {
+    fn parse(p: &mut Parser<'de>) -> Result<Self, ParseError>;
+}
+
+impl<'de> Parseable<'de> for Skip {
+    fn parse(p: &mut Parser<'de>) -> Result<Self, ParseError> {
+        p.item()?;
+        Ok(Skip)
+    }
+}
+
+impl<'de> Parseable<'de> for &'de str {
+    fn parse(p: &mut Parser<'de>) -> Result<Self, ParseError> {
+        p.item()
+    }
 }
 
 macro_rules! parse_int {
     ($ty:ty) => {
-        impl Parseable for $ty {
+        impl Parseable<'_> for $ty {
             fn parse(p: &mut Parser<'_>) -> Result<Self, ParseError> {
                 let item = p.item()?;
                 Ok(item.parse()?)
@@ -151,8 +173,8 @@ parse_int!(f64);
 
 macro_rules! parse_tuple {
     ($first_ty:ident $first_var:ident $(, $ty:ident $var:ident)*) => {
-        impl<$first_ty, $($ty,)*> Parseable for ($first_ty, $($ty,)*) where $first_ty: Parseable, $($ty: Parseable),* {
-            fn parse(p: &mut Parser<'_>) -> Result<Self, ParseError> {
+        impl<'de, $first_ty, $($ty,)*> Parseable<'de> for ($first_ty, $($ty,)*) where $first_ty: Parseable<'de>, $($ty: Parseable<'de>),* {
+            fn parse(p: &mut Parser<'de>) -> Result<Self, ParseError> {
                 let $first_var = $first_ty::parse(p)?;
                 $(let $var = $ty::parse(p)?;)*
                 Ok(($first_var, $($var,)*))
@@ -167,11 +189,11 @@ macro_rules! parse_tuple {
 
 parse_tuple!(A a, B b, C c, D d, E e);
 
-impl<T, const N: usize> Parseable for [T; N]
+impl<'de, T, const N: usize> Parseable<'de> for [T; N]
 where
-    T: Copy + Default + Parseable,
+    T: Copy + Default + Parseable<'de>,
 {
-    fn parse(p: &mut Parser<'_>) -> Result<Self, ParseError> {
+    fn parse(p: &mut Parser<'de>) -> Result<Self, ParseError> {
         let mut init = [T::default(); N];
 
         for out in init.iter_mut() {

@@ -59,7 +59,11 @@ fn main() -> Result<()> {
     let mut edges = HashMap::<_, Vec<Node>>::new();
     let mut alloc = Default::default();
 
-    while let Some(step) = p.next_line().and_then(|s| parse(s, &mut alloc)) {
+    while let Some(step) = p
+        .next_line()
+        .map(Parser::into_str)
+        .and_then(|s| parse(s, &mut alloc))
+    {
         assert!(step.from != step.to);
 
         if step.to != Node::Start {

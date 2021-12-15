@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     let mut grid: Vec<u8> = Vec::new();
 
-    while let Some(line) = p.next_line() {
+    while let Some(line) = p.next_line().map(Parser::into_str) {
         for c in line.chars() {
             grid.push(match c {
                 '1' => 1,

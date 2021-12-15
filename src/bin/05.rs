@@ -27,7 +27,9 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn parse(line: &str) -> Option<Line> {
+fn parse(line: Parser<'_>) -> Option<Line> {
+    let line = line.into_str();
+
     let (first, second) = line.split_once(" -> ")?;
     let (fx, fy) = first.split_once(',')?;
     let (tx, ty) = second.split_once(',')?;

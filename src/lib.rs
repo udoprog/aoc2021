@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Result};
 
 mod parse;
-pub use self::parse::{parse, ParseError, Parseable, Parser};
+pub use self::parse::{parse, ParseError, Parseable, Parser, Skip};
 
 pub fn load(name: &str) -> Result<String> {
     let dir =
@@ -19,7 +19,7 @@ pub fn load(name: &str) -> Result<String> {
 /// a template.
 pub fn lines<T>(buf: String) -> Result<Vec<T>>
 where
-    T: Parseable,
+    T: for<'de> Parseable<'de>,
 {
     let mut out = Vec::new();
 

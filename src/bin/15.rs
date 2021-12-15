@@ -17,7 +17,7 @@ fn main() -> Result<()> {
 
     let mut y = 0isize;
 
-    while let Some(line) = p.next_line() {
+    while let Some(line) = p.next_line().map(Parser::into_str) {
         for (x, c) in line.chars().flat_map(|c| c.to_digit(10)).enumerate() {
             let x = x as isize;
             map.insert((x, y), c as usize);

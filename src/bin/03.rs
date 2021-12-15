@@ -62,7 +62,7 @@ impl FromIterator<bool> for Bits {
     }
 }
 
-impl Parseable for Bits {
+impl Parseable<'_> for Bits {
     fn parse(p: &mut aoc::Parser<'_>) -> Result<Self, ParseError> {
         let mut init = [false; DIGITS];
 

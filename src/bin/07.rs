@@ -3,7 +3,7 @@ use aoc::Parser;
 
 fn main() -> Result<()> {
     let input = aoc::load("07.txt")?;
-    let line = Parser::new(&input).line()?;
+    let line = Parser::new(&input).line()?.into_str();
 
     let mut pos = Vec::new();
 

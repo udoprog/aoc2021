@@ -9,7 +9,7 @@ enum Command {
     Up,
 }
 
-impl Parseable for Command {
+impl Parseable<'_> for Command {
     fn parse(p: &mut aoc::Parser<'_>) -> Result<Self, ParseError> {
         let line = p.item()?;
 

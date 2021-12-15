@@ -39,7 +39,7 @@ fn main() -> Result<()> {
     let input = aoc::load("04.txt")?;
     let mut p = aoc::Parser::new(&input);
 
-    let line = p.line()?;
+    let line = p.line()?.into_str();
 
     let mut nums: Vec<usize> = Vec::new();
 

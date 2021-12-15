@@ -12,12 +12,12 @@ fn main() -> Result<()> {
     let input = aoc::load("14.txt")?;
     let mut p = Parser::new(&input);
 
-    let template = p.line()?.chars().collect::<Vec<_>>();
+    let template = p.line()?.into_str().chars().collect::<Vec<_>>();
     p.line()?;
 
     let mut rules = HashMap::new();
 
-    while let Some(sub) = p.next_line().and_then(parse) {
+    while let Some(sub) = p.next_line().map(Parser::into_str).and_then(parse) {
         rules.insert(sub.m, sub.to);
     }
 

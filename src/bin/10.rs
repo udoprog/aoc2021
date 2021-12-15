@@ -16,7 +16,7 @@ fn main() -> Result<()> {
     let mut part1 = 0;
     let mut part2 = Vec::new();
 
-    'outer: while let Some(line) = p.next_line() {
+    'outer: while let Some(line) = p.next_line().map(Parser::into_str) {
         let mut stack = Vec::new();
 
         for c in line.chars() {
