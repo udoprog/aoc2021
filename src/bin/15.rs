@@ -1,7 +1,5 @@
-use std::{
-    cmp::Reverse,
-    collections::{BinaryHeap, HashMap},
-};
+use std::cmp::Reverse;
+use std::collections::{BinaryHeap, HashMap};
 
 use anyhow::Result;
 use aoc::Parser;
