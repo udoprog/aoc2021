@@ -7,35 +7,92 @@ struct Entry {
     value: u32,
 }
 
-fn main() -> Result<()> {
-    let input = aoc::load("18.txt")?;
-    let mut p = Parser::new(&input);
+#[derive(Default, Clone)]
+struct Snail {
+    data: Vec<Entry>,
+}
 
-    let mut base = Vec::<Entry>::new();
-
-    while let Some(mut num) = p.next_line().and_then(parse) {
-        if base.is_empty() {
-            base = num;
+impl Snail {
+    fn add(&mut self, mut other: Self) {
+        if self.data.is_empty() {
+            self.data = other.data;
         } else {
-            base.append(&mut num);
+            self.data.append(&mut other.data);
 
-            for e in &mut base {
+            for e in &mut self.data {
                 e.level += 1;
             }
         }
 
-        process(&mut base);
+        process(&mut self.data);
     }
 
-    let part1 = magnitude(&base);
+    /// Calculate the magnitude of a number of entries.
+    fn magnitude(&self) -> u32 {
+        let mut data = self.data.to_vec();
+
+        while data.len() != 1 {
+            let mut n = 0;
+
+            while n != data.len() && data.len() != 1 {
+                if data[n].level == data[n + 1].level {
+                    data[n].value = data[n].value * 3 + data[n + 1].value * 2;
+                    data[n].level -= 1;
+                    data.remove(n + 1);
+                    n = n.saturating_sub(1);
+                    continue;
+                }
+
+                n += 1;
+            }
+        }
+
+        assert_eq!(data[0].level, 0);
+        data[0].value
+    }
+}
+
+fn main() -> Result<()> {
+    let input = aoc::load("18.txt")?;
+    let mut p = Parser::new(&input);
+
+    let mut full = Snail::default();
+    let mut all = Vec::new();
+
+    while let Some(snail) = p.next_line().and_then(parse) {
+        all.push(snail.clone());
+        full.add(snail);
+    }
+
+    let part1 = full.magnitude();
+
+    let mut part2 = u32::MIN;
+
+    for a in 0..all.len() {
+        for b in (a + 1)..all.len() {
+            {
+                let mut a = all[a].clone();
+                a.add(all[b].clone());
+                part2 = u32::max(a.magnitude(), part2);
+            }
+
+            {
+                let mut b = all[b].clone();
+                b.add(all[a].clone());
+                part2 = u32::max(b.magnitude(), part2);
+            }
+        }
+    }
+
     assert_eq!(part1, 4124);
+    assert_eq!(part2, 4673);
     Ok(())
 }
 
-fn parse(p: Parser<'_>) -> Option<Vec<Entry>> {
+fn parse(p: Parser<'_>) -> Option<Snail> {
     let s = p.into_str();
 
-    let mut output = Vec::new();
+    let mut data = Vec::new();
     let mut level = 0;
 
     for c in s.chars() {
@@ -48,13 +105,13 @@ fn parse(p: Parser<'_>) -> Option<Vec<Entry>> {
             }
             c => {
                 if let Some(value) = c.to_digit(10) {
-                    output.push(Entry { level, value })
+                    data.push(Entry { level, value })
                 };
             }
         }
     }
 
-    Some(output)
+    Some(Snail { data })
 }
 
 fn process(num: &mut Vec<Entry>) {
@@ -130,28 +187,4 @@ fn split(num: &mut Vec<Entry>, n: usize) -> bool {
     );
 
     true
-}
-
-/// Calculate the magnitude of a number of entries.
-fn magnitude(num: &[Entry]) -> u32 {
-    let mut num = num.to_vec();
-
-    while num.len() != 1 {
-        let mut n = 0;
-
-        while n != num.len() && num.len() != 1 {
-            if num[n].level == num[n + 1].level {
-                num[n].value = num[n].value * 3 + num[n + 1].value * 2;
-                num[n].level -= 1;
-                num.remove(n + 1);
-                n = n.saturating_sub(1);
-                continue;
-            }
-
-            n += 1;
-        }
-    }
-
-    assert_eq!(num[0].level, 0);
-    num[0].value
 }
